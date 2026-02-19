@@ -29,7 +29,7 @@ As an enhanced fork of the original X-UI project, 3X-UI provides improved stabil
 bash <(curl -Ls https://raw.githubusercontent.com/PedroLiu1999/3x-ui/master/install.sh)
 ```
 
-For full documentation, please visit the [project Wiki](https://github.com/PedroLiu1999/3x-ui/wiki).
+For full documentation, please visit the [project Wiki](https://github.com/MHSanaei/3x-ui/wiki).
 
 ## A Special Thanks to
 
