@@ -48,7 +48,7 @@
                 </a-select>
             </a-form-item>
             <a-form-item label='{{ i18n "pages.xray.outbound.city" }}' v-if="nordModal.cities.length > 0">
-                <a-select v-model="nordModal.cityId" show-search option-filter-prop="label">
+                <a-select v-model="nordModal.cityId" @change="onCityChange" show-search option-filter-prop="label">
                     <a-select-option :key="0" :value="null" label='{{ i18n "pages.xray.outbound.allCities" }}'>
                         {{ i18n "pages.xray.outbound.allCities" }}
                     </a-select-option>
@@ -182,6 +182,10 @@
                     return s;
                 }).sort((a, b) => a.load - b.load);
 
+                if (this.servers.length > 0) {
+                    this.serverId = this.servers[0].id;
+                }
+
                 if (this.servers.length === 0) {
                     app.$message.warning('No servers found for the selected country');
                 }
@@ -276,6 +280,13 @@
             fetchServers: () => nordModal.fetchServers(),
             addOutbound: () => nordModal.addOutbound(),
             resetOutbound() { nordModal.resetOutbound(this.nordOutboundIndex) },
+            onCityChange() {
+                if (this.filteredServers.length > 0) {
+                    this.nordModal.serverId = this.filteredServers[0].id;
+                } else {
+                    this.nordModal.serverId = null;
+                }
+            }
         },
         computed: {
             nordOutboundIndex: {
