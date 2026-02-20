@@ -47,10 +47,20 @@
                     </a-select-option>
                 </a-select>
             </a-form-item>
-            <a-form-item label='{{ i18n "pages.xray.outbound.server" }}' v-if="nordModal.servers.length > 0">
+            <a-form-item label='{{ i18n "pages.xray.outbound.city" }}' v-if="nordModal.cities.length > 0">
+                <a-select v-model="nordModal.cityId" show-search option-filter-prop="label">
+                    <a-select-option :key="0" :value="null" label='{{ i18n "pages.xray.outbound.allCities" }}'>
+                        {{ i18n "pages.xray.outbound.allCities" }}
+                    </a-select-option>
+                    <a-select-option v-for="c in nordModal.cities" :key="c.id" :value="c.id" :label="c.name">
+                        [[ c.name ]]
+                    </a-select-option>
+                </a-select>
+            </a-form-item>
+            <a-form-item label='{{ i18n "pages.xray.outbound.server" }}' v-if="filteredServers.length > 0">
                 <a-select v-model="nordModal.serverId">
-                    <a-select-option v-for="s in nordModal.servers" :key="s.id" :value="s.id">
-                        [[ s.name ]] ({{ i18n "pages.xray.outbound.load" }}: [[ s.load ]]%)
+                    <a-select-option v-for="s in filteredServers" :key="s.id" :value="s.id">
+                        [[ s.cityName ]] - [[ s.name ]] ({{ i18n "pages.xray.outbound.load" }}: [[ s.load ]]%)
                     </a-select-option>
                 </a-select>
             </a-form-item>
@@ -78,6 +88,8 @@
         manualKey: '',
         countries: [],
         countryId: null,
+        cities: [],
+        cityId: null,
         servers: [],
         serverId: null,
         show() {
@@ -129,8 +141,10 @@
                 this.token = '';
                 this.manualKey = '';
                 this.countries = [];
+                this.cities = [];
                 this.servers = [];
                 this.countryId = null;
+                this.cityId = null;
             }
             this.loading(false);
         },
@@ -143,11 +157,31 @@
         async fetchServers() {
             this.loading(true);
             this.servers = [];
+            this.cities = [];
             this.serverId = null;
+            this.cityId = null;
             const msg = await HttpUtil.post('/panel/xray/nord/servers', { countryId: this.countryId });
             if (msg.success) {
                 const data = JSON.parse(msg.obj);
-                this.servers = (data.servers || []).sort((a, b) => a.load - b.load);
+                const locations = data.locations || [];
+                const locToCity = {};
+                const citiesMap = new Map();
+                locations.forEach(loc => {
+                    if (loc.country && loc.country.city) {
+                        citiesMap.set(loc.country.city.id, loc.country.city);
+                        locToCity[loc.id] = loc.country.city;
+                    }
+                });
+                this.cities = Array.from(citiesMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+                
+                this.servers = (data.servers || []).map(s => {
+                    const firstLocId = (s.location_ids || [])[0];
+                    const city = locToCity[firstLocId];
+                    s.cityId = city ? city.id : null;
+                    s.cityName = city ? city.name : 'Unknown';
+                    return s;
+                }).sort((a, b) => a.load - b.load);
+
                 if (this.servers.length === 0) {
                     app.$message.warning('No servers found for the selected country');
                 }
@@ -248,6 +282,12 @@
                 get: function () {
                     return app.templateSettings ? app.templateSettings.outbounds.findIndex((o) => o.tag.startsWith("nord-")) : -1;
                 }
+            },
+            filteredServers: function() {
+                if (!this.nordModal.cityId) {
+                    return this.nordModal.servers;
+                }
+                return this.nordModal.servers.filter(s => s.cityId === this.nordModal.cityId);
             }
         }
     });

@@ -539,6 +539,8 @@
 "accessToken" = "Access Token"
 "country" = "Country"
 "server" = "Server"
+"city" = "City"
+"allCities" = "All Cities"
 "privateKey" = "Private Key"
 "load" = "Load"
 

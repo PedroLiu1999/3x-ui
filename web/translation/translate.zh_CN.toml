@@ -536,6 +536,8 @@
 "accessToken" = "访问令牌"
 "country" = "国家"
 "server" = "服务器"
+"city" = "城市"
+"allCities" = "所有城市"
 "privateKey" = "私钥"
 "load" = "负载"
 
