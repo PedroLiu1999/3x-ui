@@ -28,7 +28,7 @@ func (s *NordService) GetCountries() (string, error) {
 }
 
 func (s *NordService) GetServers(countryId string) (string, error) {
-	url := fmt.Sprintf("https://api.nordvpn.com/v2/servers?limit=10&filters[servers_technologies][id]=35&filters[country_id]=%s", countryId)
+	url := fmt.Sprintf("https://api.nordvpn.com/v2/servers?limit=0&filters[servers_technologies][id]=35&filters[country_id]=%s", countryId)
 	resp, err := http.Get(url)
 	if err != nil {
 		return "", err
