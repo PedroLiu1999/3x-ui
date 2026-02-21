@@ -38,7 +38,28 @@ func (s *NordService) GetServers(countryId string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return string(body), nil
+	var data map[string]any
+	if err := json.Unmarshal(body, &data); err != nil {
+		return string(body), nil
+	}
+
+	servers, ok := data["servers"].([]any)
+	if !ok {
+		return string(body), nil
+	}
+
+	var filtered []any
+	for _, s := range servers {
+		if server, ok := s.(map[string]any); ok {
+			if load, ok := server["load"].(float64); ok && load > 7 {
+				filtered = append(filtered, s)
+			}
+		}
+	}
+	data["servers"] = filtered
+
+	result, _ := json.Marshal(data)
+	return string(result), nil
 }
 
 func (s *NordService) SetKey(privateKey string) (string, error) {
